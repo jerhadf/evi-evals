@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Loader2 } from 'lucide-react'
-import EvaluationResults from './evaluation-results'
+import { EvaluationResults } from './evaluation-results'
 
 export default function EvaluationForm() {
   const [chatId, setChatId] = useState('')
@@ -15,10 +15,6 @@ export default function EvaluationForm() {
   const [showResults, setShowResults] = useState(false)
   const [transcript, setTranscript] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const [results, setResults] = useState({
-    satisfactionScore: 0,
-    status: 'unknown' as 'success' | 'failure' | 'unknown'
-  })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -26,9 +22,10 @@ export default function EvaluationForm() {
     setError(null)
 
     try {
-      console.log('Submitting evaluation for chat ID:', chatId);
+      console.log('🔵 [Evaluation] Starting evaluation for chat ID:', chatId);
 
       // Get transcript
+      console.log('📝 [Transcript] Fetching transcript...');
       const transcriptResponse = await fetch('/api/transcript', {
         method: 'POST',
         headers: {
@@ -38,8 +35,9 @@ export default function EvaluationForm() {
       });
 
       const transcriptData = await transcriptResponse.json();
-      console.log('Transcript API response:', {
+      console.log('📝 [Transcript] Response:', {
         status: transcriptResponse.status,
+        ok: transcriptResponse.ok,
         data: transcriptData
       });
 
@@ -47,20 +45,19 @@ export default function EvaluationForm() {
         throw new Error(transcriptData.error || 'Failed to fetch transcript');
       }
 
+      if (!transcriptData.transcript) {
+        throw new Error('No transcript data received');
+      }
+
+      console.log('✅ [Transcript] Successfully fetched transcript of length:', transcriptData.transcript.length);
       setTranscript(transcriptData.transcript);
-
-      // Simulate other results for now
-      setResults({
-        satisfactionScore: Math.floor(Math.random() * 100),
-        status: ['success', 'failure', 'unknown'][Math.floor(Math.random() * 3)] as 'success' | 'failure' | 'unknown'
-      });
-
       setIsLoading(false)
       setShowResults(true)
     } catch (error) {
-      console.error('Error details:', {
+      console.error('❌ [Evaluation] Error:', {
         error,
-        message: error instanceof Error ? error.message : 'Unknown error'
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
       });
       setError(error instanceof Error ? error.message : 'An unexpected error occurred');
       setIsLoading(false);
@@ -134,9 +131,8 @@ export default function EvaluationForm() {
             transition={{ duration: 0.3 }}
           >
             <EvaluationResults
-              satisfactionScore={results.satisfactionScore}
-              status={results.status}
               transcript={transcript}
+              isLoading={isLoading}
             />
             <div className="flex justify-center mt-8">
               <Button
