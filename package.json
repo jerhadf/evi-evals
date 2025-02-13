@@ -11,7 +11,12 @@
     "test-chat-events": "node --loader ts-node/esm scripts/test-chat-events.ts"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^1.1.7",
+    "@ai-sdk/google": "^1.1.13",
+    "@ai-sdk/openai": "^1.1.11",
+    "@anthropic-ai/sdk": "^0.36.3",
     "@radix-ui/react-slot": "^1.1.0",
+    "ai": "^4.1.38",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv": "^16.4.4",
@@ -22,7 +27,8 @@
     "react": "^18",
     "react-dom": "^18",
     "tailwind-merge": "^2.5.5",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@types/dotenv": "^8.2.0",
