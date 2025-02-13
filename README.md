@@ -24,9 +24,9 @@ These dimensions are crucial because they measure both objective success and sub
 ✅ When I click Run Evaluation, the full transcript of the call should appear in a way that makes sense in the UI (including the expression measures). This transcript should be viewed as a collapsible, non-editable text box in the "Evaluation Results" screen that comes after clicking the button.
 ✅ In the evaluation results screen, a 'satisfaction score' should appear that is just a satisfaction score from 1 to 5. This satisfaction score should be computed with the LLM as judge approach.
 ✅ In the evaluation results screen, a 'task completion' box should appear that is just a YES or NO.
-⚪ Add detailed reasoning/explanation component for the satisfaction score using structured outputs from the LLM.
 ⚪ In the evaluation results screen, ensure that a a 'summary' box that is just a condensed summary of the call appears below the transcript box.
-⚪ Add detailed reasoning/explanation component for the task completion assessment.
+⚪ Add detailed reasoning/explanation UI component for the task completion assessment.
+⚪ Add detailed reasoning/explanation UI component for the satisfaction score using structured outputs from the LLM.
 ⚪ Use the Vercel AI SDK to pass the full transcript to an LLM (claude-3-5-sonnet) and compute a satisfaction score, implement this as an efficient API route. This should be completed right after the transcript is fetched - right after it's fetched, get a satisfaction score (along with the reasoning for this score, 1-4 sentences). This score should prioritize the User's messages, and focus on their language AND their emotional expressions, especially toward the end of the call. It should try to figure out: are they satisfied? Why or why not? Use structured outputs with a Zod schema that has a score from 1 to 5 with clear descriptions for each score level.
 ⚪ Use the Vercel AI SDK to pass the full transcript to an LLM (Gemini 2.0 Flash) and produce an excellent, accurate summary
 ⚪ Use the Vercel AI SDK to pass the full transcript to an LLM (Gemini 2.0 Flash), along with the user's task success criteria description, and produce a structured output (along with reasoning) for whether the task was a Success, a Failure, or Unknown
