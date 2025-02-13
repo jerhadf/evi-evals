@@ -74,11 +74,11 @@ export function SatisfactionScore({ score, reasoning }: SatisfactionScoreProps) 
       <CardContent className="p-6">
         <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <span className="text-lg font-medium">Score: {score}/5</span>
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-              getScoreColor(score).replace('bg-', 'bg-opacity-20 text-')
-            }`}>
+            <span className={`text-base font-medium ${getScoreColor(score).replace('bg-', 'text-')}`}>
               {getScoreLabel(score)}
+            </span>
+            <span className="text-sm text-gray-500">
+              Score: {score}/5
             </span>
           </div>
 
