@@ -59,7 +59,12 @@ export function SatisfactionScore({ score, reasoning }: SatisfactionScoreProps) 
     ))
   }
 
-  const indicatorPosition = ((score - 1) / 4) * 100 // Convert 1-5 to 0-100%
+  // Calculate the center position of the appropriate segment
+  const getIndicatorPosition = (score: number) => {
+    const segmentWidth = 100 / 5 // Each segment is 20% wide
+    const segmentIndex = score - 1 // Convert score (1-5) to index (0-4)
+    return (segmentIndex * segmentWidth) + (segmentWidth / 2) // Center of the segment
+  }
 
   return (
     <Card className="overflow-hidden">
@@ -83,7 +88,7 @@ export function SatisfactionScore({ score, reasoning }: SatisfactionScoreProps) 
             </div>
             <div
               className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-blue-500 rounded-full shadow-md transform -translate-x-1/2 transition-all duration-300"
-              style={{ left: `${indicatorPosition}%` }}
+              style={{ left: `${getIndicatorPosition(score)}%` }}
             />
           </div>
 

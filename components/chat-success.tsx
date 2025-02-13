@@ -36,10 +36,12 @@ export function ChatSuccess({ status, reasoning }: ChatSuccessProps) {
         <CardTitle className="text-lg font-semibold text-[#0066cc]">Chat Success</CardTitle>
       </CardHeader>
       <CardContent className="p-6">
-        <div className="flex flex-col items-center space-y-4">
-          {getStatusIcon()}
-          <div className={`px-4 py-2 rounded-full font-medium ${getStatusColor()} capitalize`}>
-            {status}
+        <div className="space-y-4">
+          <div className="flex items-center justify-center gap-4">
+            {getStatusIcon()}
+            <div className={`px-4 py-2 rounded-full font-medium ${getStatusColor()} capitalize`}>
+              {status}
+            </div>
           </div>
           <ReasoningCollapse reasoning={reasoning} />
         </div>
