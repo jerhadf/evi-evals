@@ -95,15 +95,15 @@ export default function EvaluationForm() {
             </div>
             <div className="space-y-2">
               <label htmlFor="successCriteria" className="block text-lg font-medium text-gray-700">
-                Success Criteria
+                What is success for this chat?
               </label>
               <Textarea
                 id="successCriteria"
                 value={successCriteria}
                 onChange={(e) => setSuccessCriteria(e.target.value)}
-                placeholder="Success Criteria: Please describe the specific outcomes or goals that would indicate successful completion of the AI's task. Consider including measurable metrics or clear indicators of success."
+                placeholder="Briefly describe EVI's task or goals for this chat - what would make this chat successful? For example: 'EVI retrieves relevant web search results whenever the user asks' or 'be a friendly, helpful, empathic AI voice that supports the user.'"
                 required
-                className="w-full h-48 rounded-lg text-lg p-6 transition-all duration-200 border-2 hover:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc] focus:border-transparent resize-none"
+                className="w-full h-32 rounded-lg text-lg p-6 transition-all duration-200 border-2 hover:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc] focus:border-transparent resize-none"
               />
             </div>
             <div className="flex justify-center pt-4">
@@ -132,6 +132,7 @@ export default function EvaluationForm() {
           >
             <EvaluationResults
               transcript={transcript}
+              successCriteria={successCriteria}
               isLoading={isLoading}
             />
             <div className="flex justify-center mt-8">

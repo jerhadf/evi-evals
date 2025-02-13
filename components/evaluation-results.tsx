@@ -1,13 +1,15 @@
 'use client'
 
 import { motion } from "framer-motion"
-import { CheckCircle2, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useState, useEffect } from "react"
 import { SatisfactionScore } from "./satisfaction-score"
+import { ChatSuccess } from "./chat-success"
 
 interface EvaluationResultsProps {
   transcript: string
+  successCriteria: string
   isLoading?: boolean
 }
 
@@ -16,70 +18,79 @@ interface SatisfactionResponse {
   reasoning: string
 }
 
-export function EvaluationResults({ transcript, isLoading }: EvaluationResultsProps) {
+interface ChatSuccessResponse {
+  status: 'success' | 'failure' | 'unknown'
+  reasoning: string
+}
+
+export function EvaluationResults({ transcript, successCriteria, isLoading }: EvaluationResultsProps) {
   const [satisfaction, setSatisfaction] = useState<SatisfactionResponse | null>(null)
+  const [chatSuccess, setChatSuccess] = useState<ChatSuccessResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoadingSatisfaction, setIsLoadingSatisfaction] = useState(false)
+  const [isLoadingChatSuccess, setIsLoadingChatSuccess] = useState(false)
 
   useEffect(() => {
-    const fetchSatisfactionScore = async () => {
+    const fetchEvaluations = async () => {
       if (!transcript) {
-        console.log('⚠️ [Satisfaction] No transcript provided, skipping satisfaction analysis');
+        console.log('⚠️ No transcript provided, skipping evaluations');
         return;
       }
 
-      console.log('🔵 [Satisfaction] Starting satisfaction analysis...');
+      console.log('🔵 Starting evaluations...');
       setIsLoadingSatisfaction(true)
+      setIsLoadingChatSuccess(true)
       setError(null)
 
       try {
-        console.log('📊 [Satisfaction] Making API request...');
-        const response = await fetch('/api/satisfaction', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ transcript }),
-        });
+        // Run both evaluations in parallel
+        const [satisfactionResponse, chatSuccessResponse] = await Promise.all([
+          fetch('/api/satisfaction', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ transcript }),
+          }),
+          fetch('/api/chat-success', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ transcript, successCriteria }),
+          })
+        ]);
 
-        console.log('📊 [Satisfaction] Response status:', response.status);
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          console.error('❌ [Satisfaction] API error:', {
-            status: response.status,
-            statusText: response.statusText,
-            error: errorData
-          });
-          throw new Error(errorData.error || `API error: ${response.status} ${response.statusText}`);
+        // Handle satisfaction response
+        if (!satisfactionResponse.ok) {
+          const errorData = await satisfactionResponse.json().catch(() => ({}));
+          throw new Error(errorData.error || `Satisfaction API error: ${satisfactionResponse.status}`);
         }
+        const satisfactionData = await satisfactionResponse.json();
+        setSatisfaction(satisfactionData);
 
-        const data = await response.json();
-        console.log('✅ [Satisfaction] Successfully received satisfaction data:', data);
-
-        if (!data.score || typeof data.score !== 'number' || !data.reasoning) {
-          console.error('❌ [Satisfaction] Invalid response format:', data);
-          throw new Error('Invalid satisfaction score response format');
+        // Handle chat success response
+        if (!chatSuccessResponse.ok) {
+          const errorData = await chatSuccessResponse.json().catch(() => ({}));
+          throw new Error(errorData.error || `Chat success API error: ${chatSuccessResponse.status}`);
         }
+        const chatSuccessData = await chatSuccessResponse.json();
+        setChatSuccess(chatSuccessData);
 
-        setSatisfaction(data);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
-        console.error('❌ [Satisfaction] Error:', {
+        console.error('❌ [Evaluations] Error:', {
           error: err,
           message: errorMessage,
           stack: err instanceof Error ? err.stack : undefined
         });
-        setError(`Failed to analyze user satisfaction: ${errorMessage}`);
+        setError(`Failed to complete evaluations: ${errorMessage}`);
       } finally {
         setIsLoadingSatisfaction(false);
+        setIsLoadingChatSuccess(false);
       }
     };
 
-    fetchSatisfactionScore();
-  }, [transcript]);
+    fetchEvaluations();
+  }, [transcript, successCriteria]);
 
-  if (isLoading || isLoadingSatisfaction) {
+  if (isLoading || isLoadingSatisfaction || isLoadingChatSuccess) {
     return (
       <div className="flex items-center justify-center p-8">
         <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
@@ -102,21 +113,6 @@ export function EvaluationResults({ transcript, isLoading }: EvaluationResultsPr
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
-      <Card className="overflow-hidden">
-        <CardHeader
-          className="bg-gradient-to-br from-blue-50 to-white cursor-pointer"
-        >
-          <div className="flex justify-between items-center">
-            <CardTitle className="text-lg font-semibold text-[#0066cc]">Chat Transcript</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent className="p-6">
-          <pre className="whitespace-pre-wrap font-mono text-sm bg-gray-50 p-4 rounded-lg max-h-96 overflow-y-auto">
-            {transcript}
-          </pre>
-        </CardContent>
-      </Card>
-
       <div className="grid gap-6 md:grid-cols-2">
         {satisfaction && (
           <SatisfactionScore
@@ -124,25 +120,24 @@ export function EvaluationResults({ transcript, isLoading }: EvaluationResultsPr
             reasoning={satisfaction.reasoning}
           />
         )}
-
-        <Card className="overflow-hidden">
-          <CardHeader className="bg-gradient-to-br from-blue-50 to-white">
-            <CardTitle className="text-lg font-semibold text-[#0066cc]">Evaluation Status</CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <div className="flex flex-col items-center justify-center space-y-4">
-              {satisfaction ? (
-                <>
-                  <CheckCircle2 className="w-16 h-16 text-green-500" />
-                  <span className="text-xl font-medium">Success</span>
-                </>
-              ) : (
-                <span className="text-xl font-medium">Unknown</span>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        {chatSuccess && (
+          <ChatSuccess
+            status={chatSuccess.status}
+            reasoning={chatSuccess.reasoning}
+          />
+        )}
       </div>
+
+      <Card className="overflow-hidden">
+        <CardHeader className="bg-gradient-to-br from-blue-50 to-white">
+          <CardTitle className="text-lg font-semibold text-[#0066cc]">Chat Transcript</CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          <pre className="whitespace-pre-wrap font-mono text-sm bg-gray-50 p-4 rounded-lg max-h-96 overflow-y-auto">
+            {transcript}
+          </pre>
+        </CardContent>
+      </Card>
     </motion.div>
   )
 }
