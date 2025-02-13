@@ -20,18 +20,18 @@ These dimensions are crucial because they measure both objective success and sub
 
 ### TODOS (next steps)
 
-✅ Add API route that fetches the full chat transcript including the expression measures given a chat ID (`route.ts`)
-✅ When I click Run Evaluation, the full transcript of the call should appear in a way that makes sense in the UI (including the expression measures). This transcript should be viewed as a collapsible, non-editable text box in the "Evaluation Results" screen that comes after clicking the button.
-✅ In the evaluation results screen, a 'satisfaction score' should appear that is just a satisfaction score from 1 to 5. This satisfaction score should be computed with the LLM as judge approach.
-✅ In the evaluation results screen, a 'task completion' box should appear that is just a YES or NO.
-⚪ Use the Vercel AI SDK to pass the full transcript to an LLM (Gemini 2.0 Flash) and produce an excellent, accurate summary
-⚪ In the evaluation results screen, ensure that a a 'summary' box that is just a condensed summary of the call appears above the full transcript box. This should be a full 1-2 sentence summary of the entire call, very concise
-⚪ Use the Vercel AI SDK to pass the full transcript to an LLM (Gemini 2.0 Flash), along with the user's task success criteria description, and produce a structured output (along with reasoning) for whether the task was a Success, a Failure, or Unknown
-⚪ Add detailed reasoning/explanation UI component for the task completion assessment.
-✅ Add detailed reasoning/explanation UI component for the satisfaction score using structured outputs from the LLM.
-✅ Use the Vercel AI SDK to pass the full transcript to an LLM (claude-3-5-sonnet) and compute a satisfaction score, implement this as an efficient API route. This should be completed right after the transcript is fetched - right after it's fetched, get a satisfaction score (along with the reasoning for this score, 1-4 sentences). This score should prioritize the User's messages, and focus on their language AND their emotional expressions, especially toward the end of the call. It should try to figure out: are they satisfied? Why or why not? Use structured outputs with a Zod schema that has a score from 1 to 5 with clear descriptions for each score level.
-⚪ Simplify the Success Criteria box so it's a bit smaller, just has a title of "What is success for this chat?", and the box just says in fairly simple natural language in a sample - describe the AI's task/goals and what constitutes success for this chat.
-⚪ Improve the UI polish and design to make it pretty, improve the loading states to be a bit more transparent.
+- ✅ Add API route that fetches the full chat transcript including the expression measures given a chat ID (`route.ts`)
+- ✅ When I click Run Evaluation, the full transcript of the call should appear in a way that makes sense in the UI (including the expression measures). This transcript should be viewed as a collapsible, non-editable text box in the "Evaluation Results" screen that comes after clicking the button.
+- ✅ In the evaluation results screen, a 'satisfaction score' should appear that is just a satisfaction score from 1 to 5. This satisfaction score should be computed with the LLM as judge approach.
+- ✅ In the evaluation results screen, a 'task completion' box should appear that is just a YES or NO.
+- ⚪ Use the Vercel AI SDK to pass the full transcript to an LLM (Gemini 2.0 Flash) and produce an excellent, accurate summary
+- ⚪ In the evaluation results screen, ensure that a 'summary' box that is just a condensed summary of the call appears above the full transcript box. This should be a full 1-2 sentence summary of the entire call, very concise
+- ✅ Use the Vercel AI SDK to pass the full transcript to an LLM (Gemini 2.0 Flash), along with the user's task success criteria description, and produce a structured output (along with reasoning) for whether the task was a Success, a Failure, or Unknown
+- ✅ Add detailed reasoning/explanation UI component for the task completion assessment.
+- ✅ Add detailed reasoning/explanation UI component for the satisfaction score using structured outputs from the LLM.
+- ✅ Use the Vercel AI SDK to pass the full transcript to an LLM (claude-3-5-sonnet) and compute a satisfaction score, implement this as an efficient API route. This should be completed right after the transcript is fetched - right after it's fetched, get a satisfaction score (along with the reasoning for this score, 1-4 sentences). This score should prioritize the User's messages, and focus on their language AND their emotional expressions, especially toward the end of the call. It should try to figure out: are they satisfied? Why or why not? Use structured outputs with a Zod schema that has a score from 1 to 5 with clear descriptions for each score level.
+- ✅ Simplify the Success Criteria box so it's a bit smaller, just has a title of "What is success for this chat?", and the box just says in fairly simple natural language in a sample - describe the AI's task/goals and what constitutes success for this chat.
+- ⚪ Improve the UI polish and design to make it pretty, improve the loading states to be a bit more transparent.
 
 Use the next.js app router pattern to add these as appropriate API routes for the prototype. Use good design patterns that will look good and be efficient and effective.
 
