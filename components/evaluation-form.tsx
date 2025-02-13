@@ -13,6 +13,8 @@ export default function EvaluationForm() {
   const [successCriteria, setSuccessCriteria] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [showResults, setShowResults] = useState(false)
+  const [transcript, setTranscript] = useState('')
+  const [error, setError] = useState<string | null>(null)
   const [results, setResults] = useState({
     satisfactionScore: 0,
     status: 'unknown' as 'success' | 'failure' | 'unknown'
@@ -21,18 +23,48 @@ export default function EvaluationForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    // Simulate results (replace with actual API call)
-    setResults({
-      satisfactionScore: Math.floor(Math.random() * 100),
-      status: ['success', 'failure', 'unknown'][Math.floor(Math.random() * 3)] as 'success' | 'failure' | 'unknown'
-    })
-    
-    setIsLoading(false)
-    setShowResults(true)
+    setError(null)
+
+    try {
+      console.log('Submitting evaluation for chat ID:', chatId);
+
+      // Get transcript
+      const transcriptResponse = await fetch('/api/transcript', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ chatId }),
+      });
+
+      const transcriptData = await transcriptResponse.json();
+      console.log('Transcript API response:', {
+        status: transcriptResponse.status,
+        data: transcriptData
+      });
+
+      if (!transcriptResponse.ok) {
+        throw new Error(transcriptData.error || 'Failed to fetch transcript');
+      }
+
+      setTranscript(transcriptData.transcript);
+
+      // Simulate other results for now
+      setResults({
+        satisfactionScore: Math.floor(Math.random() * 100),
+        status: ['success', 'failure', 'unknown'][Math.floor(Math.random() * 3)] as 'success' | 'failure' | 'unknown'
+      });
+
+      setIsLoading(false)
+      setShowResults(true)
+    } catch (error) {
+      console.error('Error details:', {
+        error,
+        message: error instanceof Error ? error.message : 'Unknown error'
+      });
+      setError(error instanceof Error ? error.message : 'An unexpected error occurred');
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -45,6 +77,12 @@ export default function EvaluationForm() {
             onSubmit={handleSubmit}
             className="space-y-6 max-w-2xl mx-auto"
           >
+            {error && (
+              <div className="p-4 text-red-700 bg-red-100 rounded-lg border border-red-300">
+                <p className="font-medium">Error:</p>
+                <p className="mt-1">{error}</p>
+              </div>
+            )}
             <div className="space-y-2">
               <label htmlFor="chatId" className="block text-lg font-medium text-gray-700">
                 Chat ID
@@ -98,6 +136,7 @@ export default function EvaluationForm() {
             <EvaluationResults
               satisfactionScore={results.satisfactionScore}
               status={results.status}
+              transcript={transcript}
             />
             <div className="flex justify-center mt-8">
               <Button

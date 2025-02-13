@@ -1,15 +1,19 @@
 'use client'
 
 import { motion } from "framer-motion"
-import { CheckCircle2, XCircle, HelpCircle } from 'lucide-react'
+import { CheckCircle2, XCircle, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState } from "react"
 
 interface EvaluationResultsProps {
   satisfactionScore: number
   status: 'success' | 'failure' | 'unknown'
+  transcript: string
 }
 
-export default function EvaluationResults({ satisfactionScore, status }: EvaluationResultsProps) {
+export default function EvaluationResults({ satisfactionScore, status, transcript }: EvaluationResultsProps) {
+  const [isTranscriptExpanded, setIsTranscriptExpanded] = useState(false)
+
   const statusConfig = {
     success: { icon: CheckCircle2, color: 'text-green-500', text: 'Success' },
     failure: { icon: XCircle, color: 'text-red-500', text: 'Failure' },
@@ -22,8 +26,28 @@ export default function EvaluationResults({ satisfactionScore, status }: Evaluat
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="grid gap-6 md:grid-cols-2"
+      className="space-y-6"
     >
+      <Card className="overflow-hidden">
+        <CardHeader
+          className="bg-gradient-to-br from-blue-50 to-white cursor-pointer"
+          onClick={() => setIsTranscriptExpanded(!isTranscriptExpanded)}
+        >
+          <div className="flex justify-between items-center">
+            <CardTitle className="text-lg font-semibold text-[#0066cc]">Chat Transcript</CardTitle>
+            {isTranscriptExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+          </div>
+        </CardHeader>
+        {isTranscriptExpanded && (
+          <CardContent className="p-6">
+            <pre className="whitespace-pre-wrap font-mono text-sm bg-gray-50 p-4 rounded-lg max-h-96 overflow-y-auto">
+              {transcript}
+            </pre>
+          </CardContent>
+        )}
+      </Card>
+
+      <div className="grid gap-6 md:grid-cols-2">
       <Card className="overflow-hidden">
         <CardHeader className="bg-gradient-to-br from-blue-50 to-white">
           <CardTitle className="text-lg font-semibold text-[#0066cc]">User Satisfaction</CardTitle>
@@ -80,6 +104,7 @@ export default function EvaluationResults({ satisfactionScore, status }: Evaluat
           </div>
         </CardContent>
       </Card>
+      </div>
     </motion.div>
   )
 }
