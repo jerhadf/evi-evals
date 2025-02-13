@@ -30,7 +30,7 @@ These dimensions are crucial because they measure both objective success and sub
 ⚪ Add detailed reasoning/explanation UI component for the task completion assessment.
 ✅ Add detailed reasoning/explanation UI component for the satisfaction score using structured outputs from the LLM.
 ✅ Use the Vercel AI SDK to pass the full transcript to an LLM (claude-3-5-sonnet) and compute a satisfaction score, implement this as an efficient API route. This should be completed right after the transcript is fetched - right after it's fetched, get a satisfaction score (along with the reasoning for this score, 1-4 sentences). This score should prioritize the User's messages, and focus on their language AND their emotional expressions, especially toward the end of the call. It should try to figure out: are they satisfied? Why or why not? Use structured outputs with a Zod schema that has a score from 1 to 5 with clear descriptions for each score level.
-⚪ Simplify the Success Criteria box so it's a bit smaller, is just called AI Task Description, and the box just says in fairly simple natural language - describe the AI's task/goals and what constitutes success for this.
+⚪ Simplify the Success Criteria box so it's a bit smaller, just has a title of "What is success for this chat?", and the box just says in fairly simple natural language in a sample - describe the AI's task/goals and what constitutes success for this chat.
 ⚪ Improve the UI polish and design to make it pretty, improve the loading states to be a bit more transparent.
 
 Use the next.js app router pattern to add these as appropriate API routes for the prototype. Use good design patterns that will look good and be efficient and effective.
