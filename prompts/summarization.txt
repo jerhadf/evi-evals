@@ -10,13 +10,14 @@ Focus on:
 3. The final outcome or resolution
 </task>
 
-<guidelines>
-Keep the summary objective and factual. Avoid including personal opinions or unnecessary details.
-The summary should be written in present tense and maintain a professional but not overly verbose or formal tone.
-Be concise but informative, capture the essence of the conversation, focus on what was actually discussed and accomplished, and keep language simple and accessible.
-Never start with intro phrases like "The conversation...", instead just jump directly into the summary - e.g. "User asks..." or "Centers on...". Always prefer simpler, shorter words in the summary.
-</guidelines>
+<rules>
+- Keep the summary objective and factual. Avoid including personal opinions or unnecessary details.
+- The summary should be written in present tense.
+- Avoid being overly formal or verbose. Always prefer simpler, shorter words in the summary.
+- Be concise but informative, capture the essence of the conversation, and focus on what was actually discussed and accomplished.
+- NEVER start the summary with intro filler phrases like "The conversation...", instead just jump directly into the summary -  like "User asks..." or "Centers on...".
+</rules>
 
-<transcript>
+<chat_transcript>
 {transcript}
-</transcript>
+</chat-transcript>

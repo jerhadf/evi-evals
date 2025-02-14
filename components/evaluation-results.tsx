@@ -29,95 +29,107 @@ export function EvaluationResults({ transcript, successCriteria, isLoading }: Ev
   const [satisfaction, setSatisfaction] = useState<SatisfactionResponse | null>(null)
   const [chatSuccess, setChatSuccess] = useState<ChatSuccessResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [isLoadingSatisfaction, setIsLoadingSatisfaction] = useState(false)
-  const [isLoadingChatSuccess, setIsLoadingChatSuccess] = useState(false)
+  const [isLoadingResults, setIsLoadingResults] = useState(false)
   const [summary, setSummary] = useState<string | null>(null)
-  const [isSummaryLoading, setIsSummaryLoading] = useState(false)
   const [isTranscriptOpen, setIsTranscriptOpen] = useState(false)
 
   useEffect(() => {
-    const fetchResults = async () => {
-      if (!transcript) {
-        console.log('⚠️ No transcript provided, skipping evaluations')
-        return
-      }
+    // Skip if no transcript or already loading
+    if (!transcript || isLoading || isLoadingResults) {
+      return
+    }
 
-      console.log('🔵 Starting evaluations...')
-      setIsLoadingSatisfaction(true)
-      setIsLoadingChatSuccess(true)
-      setIsSummaryLoading(true)
+    let isMounted = true
+    const controller = new AbortController()
+
+    const fetchResults = async () => {
+      console.log('🔵 [Evaluations] Starting API calls')
+      setIsLoadingResults(true)
       setError(null)
 
       try {
-        // Start all API calls in parallel
-        const [satisfactionPromise, successPromise, summaryPromise] = [
-          fetch("/api/satisfaction", {
+        // Create all API requests with the same signal
+        const requests = {
+          satisfaction: fetch("/api/satisfaction", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ transcript }),
+            signal: controller.signal
           }),
-          fetch("/api/chat-success", {
+          success: fetch("/api/chat-success", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ transcript, successCriteria }),
+            signal: controller.signal
           }),
-          fetch("/api/summary", {
+          summary: fetch("/api/summary", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ transcript }),
+            signal: controller.signal
           })
-        ]
+        }
 
-        // Wait for all results
-        const [satisfactionResponse, successResponse, summaryResponse] = await Promise.all([
-          satisfactionPromise,
-          successPromise,
-          summaryPromise
+        // Execute all requests in parallel
+        const [satisfactionRes, successRes, summaryRes] = await Promise.all([
+          requests.satisfaction,
+          requests.success,
+          requests.summary
         ])
 
-        // Handle satisfaction response
-        if (!satisfactionResponse.ok) {
-          const errorData = await satisfactionResponse.json().catch(() => ({}));
-          throw new Error(errorData.error || `Satisfaction API error: ${satisfactionResponse.status}`);
-        }
-        const satisfactionData = await satisfactionResponse.json();
-        setSatisfaction(satisfactionData);
+        // Handle responses in parallel
+        const results = await Promise.all([
+          satisfactionRes.json(),
+          successRes.json(),
+          summaryRes.json()
+        ])
 
-        // Handle chat success response
-        if (!successResponse.ok) {
-          const errorData = await successResponse.json().catch(() => ({}));
-          throw new Error(errorData.error || `Chat success API error: ${successResponse.status}`);
-        }
-        const chatSuccessData = await successResponse.json();
-        setChatSuccess(chatSuccessData);
+        // Only update state if component is still mounted
+        if (isMounted) {
+          const [satisfactionData, chatSuccessData, summaryData] = results
 
-        // Handle summary response
-        if (!summaryResponse.ok) {
-          const errorData = await summaryResponse.json().catch(() => ({}));
-          throw new Error(errorData.error || `Summary API error: ${summaryResponse.status}`);
-        }
-        const summaryData = await summaryResponse.json();
-        setSummary(summaryData.summary);
+          if (satisfactionData.error || chatSuccessData.error || summaryData.error) {
+            throw new Error('One or more API calls failed')
+          }
 
+          setSatisfaction(satisfactionData)
+          setChatSuccess(chatSuccessData)
+          setSummary(summaryData.summary)
+          console.log('✅ [Evaluations] Successfully completed all API calls')
+        }
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
-        console.error('❌ [Evaluations] Error:', {
-          error: err,
-          message: errorMessage,
-          stack: err instanceof Error ? err.stack : undefined
-        });
-        setError(`Failed to complete evaluations: ${errorMessage}`);
+        // Only update error state if this isn't an abort error and component is mounted
+        if (err instanceof Error && err.name === 'AbortError') {
+          console.log('🔵 [Evaluations] Request cancelled')
+          return
+        }
+
+        if (isMounted) {
+          const errorMessage = err instanceof Error ? err.message : 'Unknown error'
+          console.error('❌ [Evaluations] Error:', {
+            error: err,
+            message: errorMessage,
+            stack: err instanceof Error ? err.stack : undefined
+          })
+          setError(`Failed to complete evaluations: ${errorMessage}`)
+        }
       } finally {
-        setIsLoadingSatisfaction(false);
-        setIsLoadingChatSuccess(false);
-        setIsSummaryLoading(false);
+        if (isMounted) {
+          setIsLoadingResults(false)
+        }
       }
-    };
+    }
 
-    fetchResults();
-  }, [transcript, successCriteria]);
+    fetchResults()
 
-  if (isLoading || isLoadingSatisfaction || isLoadingChatSuccess || isSummaryLoading) {
+    // Cleanup function
+    return () => {
+      isMounted = false
+      controller.abort()
+    }
+  }, [transcript, successCriteria, isLoading]) // Add isLoading to dependencies
+
+  if (isLoading || isLoadingResults) {
     return (
       <div className="flex items-center justify-center p-8">
         <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
@@ -158,7 +170,6 @@ export function EvaluationResults({ transcript, successCriteria, isLoading }: Ev
       <div className="w-full">
         <ChatSummary
           summary={summary}
-          isLoading={isSummaryLoading}
         />
       </div>
 

@@ -10,6 +10,8 @@ if (!process.env.ANTHROPIC_API_KEY) {
   throw new Error('ANTHROPIC_API_KEY is required')
 }
 
+const CLAUDE_MODEL = anthropic('claude-3-5-haiku-latest')
+
 // Load satisfaction score prompt from file
 const SATISFACTION_PROMPT = fs.readFileSync(
   path.join(process.cwd(), 'prompts', 'satisfaction-score.txt'),
@@ -23,8 +25,29 @@ const SatisfactionSchema = z.object({
 });
 
 export async function POST(req: Request) {
+  const perfStartTime = performance.now()
+
   try {
-    const { transcript } = await req.json();
+    // Cache the request body
+    const contentType = req.headers.get('content-type')
+    if (!contentType?.includes('application/json')) {
+      return NextResponse.json(
+        { error: 'Content-Type must be application/json' },
+        { status: 400 }
+      )
+    }
+
+    let body
+    try {
+      body = await req.json()
+    } catch {
+      return NextResponse.json(
+        { error: 'Invalid JSON in request body' },
+        { status: 400 }
+      )
+    }
+
+    const { transcript } = body
 
     if (!transcript) {
       return NextResponse.json(
@@ -33,25 +56,27 @@ export async function POST(req: Request) {
       );
     }
 
-    console.log('🤖 [Satisfaction] Starting analysis with transcript length:', transcript.length);
+    console.log(`🔄 [API:Satisfaction] [${new Date().toLocaleTimeString('en-US', { hour12: true })}] Analyzing transcript of length ${transcript.length} chars`);
 
-    const { object: result, response } = await generateObject({
-      model: anthropic('claude-3-5-sonnet-latest'),
+    const llmStartTime = performance.now()
+    const { object: result } = await generateObject({
+      model: CLAUDE_MODEL,
       schema: SatisfactionSchema,
       schemaName: 'SatisfactionScore',
       schemaDescription: 'Satisfaction score and reasoning based on chat transcript analysis',
-      prompt: `${SATISFACTION_PROMPT}\n\nAnalyze this chat transcript and return reasoning and satisfaction score:\n\n${transcript}`,
+      prompt: SATISFACTION_PROMPT.replace('{transcript}', transcript),
       temperature: 0.5,
       maxTokens: 1024,
     });
+    const llmDuration = performance.now() - llmStartTime
 
-    // Log the full response for debugging
-    console.log('📬 [Satisfaction] Full Claude API response:', JSON.stringify(response, null, 2));
-    console.log('✅ [Satisfaction] Parsed result:', result);
+    const totalDuration = performance.now() - perfStartTime
+    console.log(`✅ [API:Satisfaction] [${new Date().toLocaleTimeString('en-US', { hour12: true })}] Analysis complete in ${totalDuration.toFixed(2)}ms (LLM: ${llmDuration.toFixed(2)}ms):\n`, result);
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error('❌ [Satisfaction] Error:', {
+    const errorDuration = performance.now() - perfStartTime
+    console.error(`❌ [API:Satisfaction] [${new Date().toLocaleTimeString('en-US', { hour12: true })}] Error after ${errorDuration.toFixed(2)}ms:`, {
       error,
       message: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined
