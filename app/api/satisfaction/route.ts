@@ -5,6 +5,11 @@ import { z } from 'zod';
 import fs from 'fs';
 import path from 'path';
 
+// Check for required API key
+if (!process.env.ANTHROPIC_API_KEY) {
+  throw new Error('ANTHROPIC_API_KEY is required')
+}
+
 // Load satisfaction score prompt from file
 const SATISFACTION_PROMPT = fs.readFileSync(
   path.join(process.cwd(), 'prompts', 'satisfaction-score.txt'),
@@ -29,7 +34,6 @@ export async function POST(req: Request) {
     }
 
     console.log('🤖 [Satisfaction] Starting analysis with transcript length:', transcript.length);
-    console.log('📋 [Satisfaction] Using prompt:', SATISFACTION_PROMPT);
 
     const { object: result, response } = await generateObject({
       model: anthropic('claude-3-5-sonnet-latest'),

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useState, useEffect } from "react"
 import { SatisfactionScore } from "./satisfaction-score"
 import { ChatSuccess } from "./chat-success"
+import { ChatSummary } from "./chat-summary"
 
 interface EvaluationResultsProps {
   transcript: string
@@ -29,33 +30,48 @@ export function EvaluationResults({ transcript, successCriteria, isLoading }: Ev
   const [error, setError] = useState<string | null>(null)
   const [isLoadingSatisfaction, setIsLoadingSatisfaction] = useState(false)
   const [isLoadingChatSuccess, setIsLoadingChatSuccess] = useState(false)
+  const [summary, setSummary] = useState<string | null>(null)
+  const [isSummaryLoading, setIsSummaryLoading] = useState(false)
 
   useEffect(() => {
-    const fetchEvaluations = async () => {
+    const fetchResults = async () => {
       if (!transcript) {
-        console.log('⚠️ No transcript provided, skipping evaluations');
-        return;
+        console.log('⚠️ No transcript provided, skipping evaluations')
+        return
       }
 
-      console.log('🔵 Starting evaluations...');
+      console.log('🔵 Starting evaluations...')
       setIsLoadingSatisfaction(true)
       setIsLoadingChatSuccess(true)
+      setIsSummaryLoading(true)
       setError(null)
 
       try {
-        // Run both evaluations in parallel
-        const [satisfactionResponse, chatSuccessResponse] = await Promise.all([
-          fetch('/api/satisfaction', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+        // Start all API calls in parallel
+        const [satisfactionPromise, successPromise, summaryPromise] = [
+          fetch("/api/satisfaction", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ transcript }),
           }),
-          fetch('/api/chat-success', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+          fetch("/api/chat-success", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ transcript, successCriteria }),
+          }),
+          fetch("/api/summary", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ transcript }),
           })
-        ]);
+        ]
+
+        // Wait for all results
+        const [satisfactionResponse, successResponse, summaryResponse] = await Promise.all([
+          satisfactionPromise,
+          successPromise,
+          summaryPromise
+        ])
 
         // Handle satisfaction response
         if (!satisfactionResponse.ok) {
@@ -66,12 +82,20 @@ export function EvaluationResults({ transcript, successCriteria, isLoading }: Ev
         setSatisfaction(satisfactionData);
 
         // Handle chat success response
-        if (!chatSuccessResponse.ok) {
-          const errorData = await chatSuccessResponse.json().catch(() => ({}));
-          throw new Error(errorData.error || `Chat success API error: ${chatSuccessResponse.status}`);
+        if (!successResponse.ok) {
+          const errorData = await successResponse.json().catch(() => ({}));
+          throw new Error(errorData.error || `Chat success API error: ${successResponse.status}`);
         }
-        const chatSuccessData = await chatSuccessResponse.json();
+        const chatSuccessData = await successResponse.json();
         setChatSuccess(chatSuccessData);
+
+        // Handle summary response
+        if (!summaryResponse.ok) {
+          const errorData = await summaryResponse.json().catch(() => ({}));
+          throw new Error(errorData.error || `Summary API error: ${summaryResponse.status}`);
+        }
+        const summaryData = await summaryResponse.json();
+        setSummary(summaryData.summary);
 
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
@@ -84,13 +108,14 @@ export function EvaluationResults({ transcript, successCriteria, isLoading }: Ev
       } finally {
         setIsLoadingSatisfaction(false);
         setIsLoadingChatSuccess(false);
+        setIsSummaryLoading(false);
       }
     };
 
-    fetchEvaluations();
+    fetchResults();
   }, [transcript, successCriteria]);
 
-  if (isLoading || isLoadingSatisfaction || isLoadingChatSuccess) {
+  if (isLoading || isLoadingSatisfaction || isLoadingChatSuccess || isSummaryLoading) {
     return (
       <div className="flex items-center justify-center p-8">
         <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
@@ -127,6 +152,11 @@ export function EvaluationResults({ transcript, successCriteria, isLoading }: Ev
           />
         )}
       </div>
+
+      <ChatSummary
+        summary={summary}
+        isLoading={isSummaryLoading}
+      />
 
       <Card className="overflow-hidden">
         <CardHeader className="bg-gradient-to-br from-blue-50 to-white">
