@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { EvalCard } from "@/components/ui/eval-card"
 import { ReasoningCollapse } from "./reasoning-collapse"
 
 interface SatisfactionScoreProps {
@@ -67,34 +67,29 @@ export function SatisfactionScore({ score, reasoning }: SatisfactionScoreProps) 
   }
 
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="bg-gradient-to-br from-blue-50 to-white">
-        <CardTitle className="text-lg font-semibold text-[#0066cc]">User Satisfaction</CardTitle>
-      </CardHeader>
-      <CardContent className="p-6">
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <span className={`text-base font-medium ${getScoreColor(score).replace('bg-', 'text-')}`}>
-              {getScoreLabel(score)}
-            </span>
-            <span className="text-sm text-gray-500">
-              Score: {score}/5
-            </span>
-          </div>
-
-          <div className="relative">
-            <div className="flex h-2">
-              {getScoreGradient()}
-            </div>
-            <div
-              className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-blue-500 rounded-full shadow-md transform -translate-x-1/2 transition-all duration-300"
-              style={{ left: `${getIndicatorPosition(score)}%` }}
-            />
-          </div>
-
-          <ReasoningCollapse reasoning={reasoning} />
+    <EvalCard title="User Satisfaction">
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <span className={`text-base font-medium ${getScoreColor(score).replace('bg-', 'text-')}`}>
+            {getScoreLabel(score)}
+          </span>
+          <span className="text-sm text-gray-500">
+            Score: {score}/5
+          </span>
         </div>
-      </CardContent>
-    </Card>
+
+        <div className="relative">
+          <div className="flex h-2">
+            {getScoreGradient()}
+          </div>
+          <div
+            className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-blue-500 rounded-full shadow-md transform -translate-x-1/2 transition-all duration-300"
+            style={{ left: `${getIndicatorPosition(score)}%` }}
+          />
+        </div>
+
+        <ReasoningCollapse reasoning={reasoning} />
+      </div>
+    </EvalCard>
   )
 }

@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { EvalCard } from "@/components/ui/eval-card"
 import { CheckCircle2, XCircle, HelpCircle } from 'lucide-react'
 import { ReasoningCollapse } from "./reasoning-collapse"
 
@@ -31,23 +31,18 @@ export function ChatSuccess({ status, reasoning }: ChatSuccessProps) {
   }
 
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="bg-gradient-to-br from-blue-50 to-white">
-        <CardTitle className="text-lg font-semibold text-[#0066cc]">Chat Success</CardTitle>
-      </CardHeader>
-      <CardContent className="p-6">
-        <div className="space-y-4">
-          <div className="flex justify-center">
-            <div className="flex items-center gap-3">
-              {getStatusIcon()}
-              <div className={`px-4 py-2 rounded-full font-medium ${getStatusColor()} capitalize`}>
-                {status}
-              </div>
+    <EvalCard title="Chat Success">
+      <div className="space-y-4">
+        <div className="flex justify-center">
+          <div className="flex items-center gap-3">
+            {getStatusIcon()}
+            <div className={`px-4 py-2 rounded-full font-medium ${getStatusColor()} capitalize`}>
+              {status}
             </div>
           </div>
-          <ReasoningCollapse reasoning={reasoning} />
         </div>
-      </CardContent>
-    </Card>
+        <ReasoningCollapse reasoning={reasoning} />
+      </div>
+    </EvalCard>
   )
 }

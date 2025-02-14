@@ -1,12 +1,13 @@
 'use client'
 
-import { motion } from "framer-motion"
-import { Loader2 } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { motion, AnimatePresence } from "framer-motion"
+import { Loader2, ChevronDown } from 'lucide-react'
 import { useState, useEffect } from "react"
 import { SatisfactionScore } from "./satisfaction-score"
 import { ChatSuccess } from "./chat-success"
 import { ChatSummary } from "./chat-summary"
+import { EvalCard } from "@/components/ui/eval-card"
+import { Button } from "@/components/ui/button"
 
 interface EvaluationResultsProps {
   transcript: string
@@ -32,6 +33,7 @@ export function EvaluationResults({ transcript, successCriteria, isLoading }: Ev
   const [isLoadingChatSuccess, setIsLoadingChatSuccess] = useState(false)
   const [summary, setSummary] = useState<string | null>(null)
   const [isSummaryLoading, setIsSummaryLoading] = useState(false)
+  const [isTranscriptOpen, setIsTranscriptOpen] = useState(false)
 
   useEffect(() => {
     const fetchResults = async () => {
@@ -153,21 +155,50 @@ export function EvaluationResults({ transcript, successCriteria, isLoading }: Ev
         )}
       </div>
 
-      <ChatSummary
-        summary={summary}
-        isLoading={isSummaryLoading}
-      />
+      <div className="w-full">
+        <ChatSummary
+          summary={summary}
+          isLoading={isSummaryLoading}
+        />
+      </div>
 
-      <Card className="overflow-hidden">
-        <CardHeader className="bg-gradient-to-br from-blue-50 to-white">
-          <CardTitle className="text-lg font-semibold text-[#0066cc]">Chat Transcript</CardTitle>
-        </CardHeader>
-        <CardContent className="p-6">
-          <pre className="whitespace-pre-wrap font-mono text-sm bg-gray-50 p-4 rounded-lg max-h-96 overflow-y-auto">
-            {transcript}
-          </pre>
-        </CardContent>
-      </Card>
+      <div className="w-full">
+        <EvalCard>
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-[#0066cc]">Chat Transcript</h3>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-9 p-0"
+              onClick={() => setIsTranscriptOpen(!isTranscriptOpen)}
+            >
+              <ChevronDown
+                className={`h-4 w-4 transition-transform duration-200 ${
+                  isTranscriptOpen ? "transform rotate-180" : ""
+                }`}
+              />
+              <span className="sr-only">Toggle transcript</span>
+            </Button>
+          </div>
+          <AnimatePresence>
+            {isTranscriptOpen && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                <div className="mt-4">
+                  <pre className="whitespace-pre-wrap font-mono text-sm bg-gray-50 p-4 rounded-lg max-h-96 overflow-y-auto">
+                    {transcript}
+                  </pre>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </EvalCard>
+      </div>
     </motion.div>
   )
 }

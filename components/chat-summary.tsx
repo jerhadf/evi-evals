@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { EvalCard } from "@/components/ui/eval-card"
 
 interface ChatSummaryProps {
   summary: string | null
@@ -7,19 +7,18 @@ interface ChatSummaryProps {
 
 export function ChatSummary({ summary, isLoading = false }: ChatSummaryProps) {
   return (
-    <Card className="mb-4">
-      <CardHeader>
-        <CardTitle className="text-lg font-semibold">Chat Summary</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="h-12 animate-pulse bg-muted rounded" />
-        ) : summary ? (
-          <p className="text-sm leading-6 text-muted-foreground">{summary}</p>
-        ) : (
-          <p className="text-sm text-muted-foreground">No summary available</p>
-        )}
-      </CardContent>
-    </Card>
+    <EvalCard title="Chat Summary">
+      {isLoading ? (
+        <div className="h-12 animate-pulse bg-muted rounded" />
+      ) : summary ? (
+        <p className="text-sm leading-6 text-muted-foreground font-inter">
+          {summary}
+        </p>
+      ) : (
+        <p className="text-sm text-muted-foreground font-inter">
+          No summary available
+        </p>
+      )}
+    </EvalCard>
   )
 }
