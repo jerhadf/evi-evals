@@ -122,8 +122,8 @@ export async function POST(request: Request) {
     }
 
     // Get API key from environment
-    const localApiKey = process.env.NEXT_PUBLIC_HUME_API_KEY || process.env.HUME_API_KEY;
-    if (!localApiKey) {
+    const apiKey = process.env.HUME_API_KEY;
+    if (!apiKey) {
       console.error('Missing HUME_API_KEY environment variable');
       return NextResponse.json(
         { error: 'Missing API credentials' },
@@ -132,7 +132,7 @@ export async function POST(request: Request) {
     }
 
     // Initialize client
-    const client = new HumeClient({ apiKey: localApiKey });
+    const client = new HumeClient({ apiKey });
     const allEvents: ReturnChatEvent[] = [];
 
     try {

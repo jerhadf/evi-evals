@@ -1,11 +1,13 @@
 'use client'
 
-import { motion } from "framer-motion"
-import { Loader2 } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { motion, AnimatePresence } from "framer-motion"
+import { Loader2, ChevronDown } from 'lucide-react'
 import { useState, useEffect } from "react"
 import { SatisfactionScore } from "./satisfaction-score"
 import { ChatSuccess } from "./chat-success"
+import { ChatSummary } from "./chat-summary"
+import { EvalCard } from "@/components/ui/eval-card"
+import { Button } from "@/components/ui/button"
 
 interface EvaluationResultsProps {
   transcript: string
@@ -29,33 +31,49 @@ export function EvaluationResults({ transcript, successCriteria, isLoading }: Ev
   const [error, setError] = useState<string | null>(null)
   const [isLoadingSatisfaction, setIsLoadingSatisfaction] = useState(false)
   const [isLoadingChatSuccess, setIsLoadingChatSuccess] = useState(false)
+  const [summary, setSummary] = useState<string | null>(null)
+  const [isSummaryLoading, setIsSummaryLoading] = useState(false)
+  const [isTranscriptOpen, setIsTranscriptOpen] = useState(false)
 
   useEffect(() => {
-    const fetchEvaluations = async () => {
+    const fetchResults = async () => {
       if (!transcript) {
-        console.log('⚠️ No transcript provided, skipping evaluations');
-        return;
+        console.log('⚠️ No transcript provided, skipping evaluations')
+        return
       }
 
-      console.log('🔵 Starting evaluations...');
+      console.log('🔵 Starting evaluations...')
       setIsLoadingSatisfaction(true)
       setIsLoadingChatSuccess(true)
+      setIsSummaryLoading(true)
       setError(null)
 
       try {
-        // Run both evaluations in parallel
-        const [satisfactionResponse, chatSuccessResponse] = await Promise.all([
-          fetch('/api/satisfaction', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+        // Start all API calls in parallel
+        const [satisfactionPromise, successPromise, summaryPromise] = [
+          fetch("/api/satisfaction", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ transcript }),
           }),
-          fetch('/api/chat-success', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+          fetch("/api/chat-success", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ transcript, successCriteria }),
+          }),
+          fetch("/api/summary", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ transcript }),
           })
-        ]);
+        ]
+
+        // Wait for all results
+        const [satisfactionResponse, successResponse, summaryResponse] = await Promise.all([
+          satisfactionPromise,
+          successPromise,
+          summaryPromise
+        ])
 
         // Handle satisfaction response
         if (!satisfactionResponse.ok) {
@@ -66,12 +84,20 @@ export function EvaluationResults({ transcript, successCriteria, isLoading }: Ev
         setSatisfaction(satisfactionData);
 
         // Handle chat success response
-        if (!chatSuccessResponse.ok) {
-          const errorData = await chatSuccessResponse.json().catch(() => ({}));
-          throw new Error(errorData.error || `Chat success API error: ${chatSuccessResponse.status}`);
+        if (!successResponse.ok) {
+          const errorData = await successResponse.json().catch(() => ({}));
+          throw new Error(errorData.error || `Chat success API error: ${successResponse.status}`);
         }
-        const chatSuccessData = await chatSuccessResponse.json();
+        const chatSuccessData = await successResponse.json();
         setChatSuccess(chatSuccessData);
+
+        // Handle summary response
+        if (!summaryResponse.ok) {
+          const errorData = await summaryResponse.json().catch(() => ({}));
+          throw new Error(errorData.error || `Summary API error: ${summaryResponse.status}`);
+        }
+        const summaryData = await summaryResponse.json();
+        setSummary(summaryData.summary);
 
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
@@ -84,13 +110,14 @@ export function EvaluationResults({ transcript, successCriteria, isLoading }: Ev
       } finally {
         setIsLoadingSatisfaction(false);
         setIsLoadingChatSuccess(false);
+        setIsSummaryLoading(false);
       }
     };
 
-    fetchEvaluations();
+    fetchResults();
   }, [transcript, successCriteria]);
 
-  if (isLoading || isLoadingSatisfaction || isLoadingChatSuccess) {
+  if (isLoading || isLoadingSatisfaction || isLoadingChatSuccess || isSummaryLoading) {
     return (
       <div className="flex items-center justify-center p-8">
         <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
@@ -128,16 +155,50 @@ export function EvaluationResults({ transcript, successCriteria, isLoading }: Ev
         )}
       </div>
 
-      <Card className="overflow-hidden">
-        <CardHeader className="bg-gradient-to-br from-blue-50 to-white">
-          <CardTitle className="text-lg font-semibold text-[#0066cc]">Chat Transcript</CardTitle>
-        </CardHeader>
-        <CardContent className="p-6">
-          <pre className="whitespace-pre-wrap font-mono text-sm bg-gray-50 p-4 rounded-lg max-h-96 overflow-y-auto">
-            {transcript}
-          </pre>
-        </CardContent>
-      </Card>
+      <div className="w-full">
+        <ChatSummary
+          summary={summary}
+          isLoading={isSummaryLoading}
+        />
+      </div>
+
+      <div className="w-full">
+        <EvalCard>
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-[#0066cc]">Chat Transcript</h3>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-9 p-0"
+              onClick={() => setIsTranscriptOpen(!isTranscriptOpen)}
+            >
+              <ChevronDown
+                className={`h-4 w-4 transition-transform duration-200 ${
+                  isTranscriptOpen ? "transform rotate-180" : ""
+                }`}
+              />
+              <span className="sr-only">Toggle transcript</span>
+            </Button>
+          </div>
+          <AnimatePresence>
+            {isTranscriptOpen && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                <div className="mt-4">
+                  <pre className="whitespace-pre-wrap font-mono text-sm bg-gray-50 p-4 rounded-lg max-h-96 overflow-y-auto">
+                    {transcript}
+                  </pre>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </EvalCard>
+      </div>
     </motion.div>
   )
 }
