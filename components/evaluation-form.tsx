@@ -15,6 +15,7 @@ export default function EvaluationForm() {
   const [showResults, setShowResults] = useState(false)
   const [transcript, setTranscript] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [humeApiKey, setHumeApiKey] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -30,6 +31,7 @@ export default function EvaluationForm() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(humeApiKey && { 'X-Hume-Api-Key': humeApiKey })
         },
         body: JSON.stringify({ chatId }),
       });
@@ -93,6 +95,7 @@ export default function EvaluationForm() {
                 className="w-full rounded-lg text-lg p-6 transition-all duration-200 border-2 hover:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc] focus:border-transparent"
               />
             </div>
+
             <div className="space-y-2">
               <label htmlFor="successCriteria" className="block text-lg font-medium text-gray-700">
                 What is success for this chat?
@@ -106,6 +109,24 @@ export default function EvaluationForm() {
                 className="w-full h-32 rounded-lg text-lg p-6 transition-all duration-200 border-2 hover:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc] focus:border-transparent resize-none"
               />
             </div>
+
+            <div className="space-y-2">
+              <label htmlFor="humeApiKey" className="block text-lg font-medium text-gray-700">
+                Hume API Key (Optional)
+              </label>
+              <Input
+                id="humeApiKey"
+                value={humeApiKey}
+                onChange={(e) => setHumeApiKey(e.target.value)}
+                type="password"
+                placeholder="Enter your Hume API key to use your own account"
+                className="w-full rounded-lg text-lg p-6 transition-all duration-200 border-2 hover:border-[#0066cc] focus:ring-2 focus:ring-[#0066cc] focus:border-transparent"
+              />
+              <p className="mt-1 text-sm text-gray-500">
+                If not provided, the default API key will be used
+              </p>
+            </div>
+
             <div className="flex justify-center pt-4">
               <Button
                 type="submit"
