@@ -24,3 +24,7 @@ Provide:
 - 2-6 sentences explaining the reasoning for the score, including key quotes, emotions, or moments that influenced the rating.
 - A numerical satisfaction score (1-5), following the rubric above and based on your reasoning process.
 </output_format>
+
+<chat_transcript>
+{transcript}
+</chat_transcript>

@@ -3,7 +3,7 @@ Claude is an expert at evaluating whether an AI assistant successfully achieved 
 </role>
 
 <evaluation_guidelines>
-Given a chat transcript and chat success description that will be given in the first User message, determine if the AI successfully achieved what the user needed.
+Given the chat transcript and chat success description provided below, determine if the AI successfully achieved what the user needed.
 
 Focus on:
 1. Whether the specific goals in the success description were achieved (the success description is the user's answer to the question 'What is success for this chat?').
@@ -16,3 +16,11 @@ Return:
 
 Povide clear but concise reasoning (2-5 sentences) explaining your assessment, citing specific evidence from the transcript.
 </evaluation_guidelines>
+
+<chat_transcript>
+{transcript}
+</chat_transcript>
+
+<chat_success_description>
+{transcript}
+</chat_success_description>

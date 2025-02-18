@@ -9,11 +9,30 @@ import { performance } from 'perf_hooks'
 const MODEL = google('gemini-2.0-flash')
 
 export async function POST(req: Request) {
-  try {
-    const startTime = performance.now()
-    console.log(`🚀 Starting summary generation with Gemini at ${new Date().toLocaleString()}`)
+  const perfStartTime = performance.now()
 
-    const { transcript } = await req.json()
+  try {
+    // Cache the request body
+    const contentType = req.headers.get('content-type')
+    if (!contentType?.includes('application/json')) {
+      return NextResponse.json(
+        { error: 'Content-Type must be application/json' },
+        { status: 400 }
+      )
+    }
+
+    let body
+    try {
+      body = await req.json()
+    } catch {
+      return NextResponse.json(
+        { error: 'Invalid JSON in request body' },
+        { status: 400 }
+      )
+    }
+
+    const { transcript } = body
+
     if (!transcript) {
       return NextResponse.json(
         { error: 'Transcript is required' },
@@ -21,24 +40,27 @@ export async function POST(req: Request) {
       )
     }
 
-    console.log('🤖 [Summary] Sending request to Gemini with transcript length:', transcript.length)
+    console.log(`🔄 [API:Summary] [${new Date().toLocaleTimeString('en-US', { hour12: true })}] Generating summary for transcript of length ${transcript.length} chars`)
 
     // Read the prompt template
     const promptPath = path.join(process.cwd(), 'prompts', 'summarization.txt')
     const promptTemplate = await fs.readFile(promptPath, 'utf8')
 
     // Generate summary using Vercel AI SDK
+    const llmStartTime = performance.now()
     const { text: summary } = await generateText({
       model: MODEL,
       prompt: promptTemplate.replace('{transcript}', transcript)
     })
+    const llmDuration = performance.now() - llmStartTime
 
-    const endTime = performance.now()
-    console.log(`✅ [Summary] Generated summary in ${(endTime - startTime).toFixed(2)}ms`)
+    const totalDuration = performance.now() - perfStartTime
+    console.log(`✅ [API:Summary] [${new Date().toLocaleTimeString('en-US', { hour12: true })}] Analysis complete in ${totalDuration.toFixed(2)}ms (LLM: ${llmDuration.toFixed(2)}ms):\n${summary}`);
 
     return NextResponse.json({ summary })
   } catch (error) {
-    console.error('❌ [Summary] Error:', {
+    const errorDuration = performance.now() - perfStartTime
+    console.error(`❌ [API:Summary] [${new Date().toLocaleTimeString('en-US', { hour12: true })}] Error after ${errorDuration.toFixed(2)}ms:`, {
       error,
       message: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined
