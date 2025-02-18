@@ -11,7 +11,7 @@ export function ChatSummary({ summary, isLoading = false }: ChatSummaryProps) {
       {isLoading ? (
         <div className="h-12 animate-pulse bg-muted rounded" />
       ) : summary ? (
-        <p className="text-sm leading-6 text-muted-foreground font-inter">
+        <p className="text-sm leading-6">
           {summary}
         </p>
       ) : (

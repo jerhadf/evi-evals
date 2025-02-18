@@ -174,17 +174,16 @@ export function EvaluationResults({ transcript, successCriteria, isLoading }: Ev
       </div>
 
       <div className="w-full">
-        <EvalCard>
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-[#0066cc]">Chat Transcript</h3>
+        <EvalCard title="Chat Transcript">
+          <div className="flex items-center justify-end -mt-12 mb-2 pr-4">
             <Button
               variant="ghost"
               size="sm"
-              className="w-9 p-0"
+              className="h-8 w-8 p-0 hover:bg-blue-50 rounded-full"
               onClick={() => setIsTranscriptOpen(!isTranscriptOpen)}
             >
               <ChevronDown
-                className={`h-4 w-4 transition-transform duration-200 ${
+                className={`h-5 w-5 text-blue-600 transition-transform duration-200 ${
                   isTranscriptOpen ? "transform rotate-180" : ""
                 }`}
               />

@@ -1,6 +1,7 @@
 import { ChevronDown } from 'lucide-react'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Button } from '@/components/ui/button'
 
 interface ReasoningCollapseProps {
   reasoning: string
@@ -11,19 +12,21 @@ export function ReasoningCollapse({ reasoning }: ReasoningCollapseProps) {
 
   return (
     <div className="mt-4">
-      <button
+      <Button
+        variant="ghost"
+        size="sm"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-full px-4 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+        className="w-full flex items-center justify-between py-2 px-3 hover:bg-blue-50 rounded-lg"
       >
-        <span className="text-sm font-medium text-gray-600">
+        <span className="text-sm text-gray-600 font-medium">
           {isOpen ? 'Hide Reasoning' : 'Show Reasoning'}
         </span>
         <ChevronDown
-          className={`w-4 h-4 text-gray-500 transition-transform ${
-            isOpen ? 'transform rotate-180' : ''
+          className={`h-5 w-5 text-blue-600 transition-transform duration-200 ${
+            isOpen ? "transform rotate-180" : ""
           }`}
         />
-      </button>
+      </Button>
       <AnimatePresence>
         {isOpen && (
           <motion.div

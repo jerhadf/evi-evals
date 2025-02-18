@@ -12,7 +12,7 @@ export function EvalCard({ title, children, className, contentClassName }: EvalC
   return (
     <Card className={cn("overflow-hidden", className)}>
       {title ? (
-        <CardHeader className="bg-gradient-to-b from-blue-50 via-blue-50/50 to-white py-2.5 px-6">
+        <CardHeader className="bg-gradient-to-b from-blue-50 via-blue-50/50 to-white py-4 px-6">
           <CardTitle className="text-lg font-semibold text-[#0066cc]">{title}</CardTitle>
         </CardHeader>
       ) : null}
