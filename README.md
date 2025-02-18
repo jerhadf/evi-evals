@@ -31,11 +31,7 @@ These dimensions are crucial because they measure both objective success and sub
 - ✅ Add detailed reasoning/explanation UI component for the satisfaction score using structured outputs from the LLM.
 - ✅ Use the Vercel AI SDK to pass the full transcript to an LLM (claude-3-5-sonnet) and compute a satisfaction score, implement this as an efficient API route. This should be completed right after the transcript is fetched - right after it's fetched, get a satisfaction score (along with the reasoning for this score, 1-4 sentences). This score should prioritize the User's messages, and focus on their language AND their emotional expressions, especially toward the end of the call. It should try to figure out: are they satisfied? Why or why not? Use structured outputs with a Zod schema that has a score from 1 to 5 with clear descriptions for each score level.
 - ✅ Simplify **the** Success Criteria box so it's a bit smaller, just has a title of "What is success for this chat?", and the box just says in fairly simple natural language in a sample - describe the AI's task/goals and what constitutes success for this chat.
-- ⚪ Improve the UI polish and design to make it pretty, improve the loading states to be a bit more transparent.
-
-Use the next.js app router pattern to add these as appropriate API routes for the prototype. Use good design patterns that will look good and be efficient and effective.
-
-Use the vercel AI SDK for all interaction with LLMs - https://sdk.vercel.ai/docs/introduction. AI SDK standardises structured object generation across model providers with the generateObject and streamObject functions. You can use both functions with different output strategies, e.g. array, object, or no-schema, and with different generation modes, e.g. auto, tool, or json. You can use Zod schemas, Valibot, or JSON schemas to specify the shape of the data that you want. Use this for structured outputs with Zod schemas.
+- ✅ Improve the UI polish and design to make it pretty, improve the loading states to be a bit more transparent.
 
 ### Task completion evaluation details
 
@@ -85,7 +81,10 @@ Use expression measures + language in chat transcript to evaluate how satisfied 
 
 **Format**: simple website using the TypeScript SDK, Next.js, deployed on vercel. With a text box for the chat ID and a text box for the users task completion criteria and We'll have to figure out some way to manage authentication because You can only access chats if you're using the API key that's associated with those chats but we Don't want them to have to paste in their API key directly into their website So figure out some way do that.
 
-**UI**: Create the website with v0 or other AI website generator with a detailed prompt. Style should be functional, minimalist, elegant. Fairly sharp lines, slightly rounded corners on boxes. Think of UI for other things.
+**UI**: Create the website with v0 or other AI website generator with a detailed prompt. Style should be simple, functional, minimalist, elegant. Fairly sharp lines, slightly rounded corners on boxes.
+
+- Use the next.js app router pattern to add these as appropriate API routes for the prototype. Use good design patterns that will look good and be efficient and effective.
+- Use the vercel AI SDK for all interaction with LLMs - https://sdk.vercel.ai/docs/introduction. AI SDK standardises structured object generation across model providers with the generateObject and streamObject functions. You can use both functions with different output strategies, e.g. array, object, or no-schema, and with different generation modes, e.g. auto, tool, or json. You can use Zod schemas, Valibot, or JSON schemas to specify the shape of the data that you want. Use this for structured outputs with Zod schemas.
 
 ## Extensions / next steps
 
