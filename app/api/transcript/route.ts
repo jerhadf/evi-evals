@@ -121,10 +121,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing chatId parameter' }, { status: 400 });
     }
 
-    // Get API key from environment
-    const apiKey = process.env.HUME_API_KEY;
+    // Get API key from request headers or environment
+    const apiKey = request.headers.get('X-Hume-Api-Key') || process.env.HUME_API_KEY;
     if (!apiKey) {
-      console.error('Missing HUME_API_KEY environment variable');
+      console.error('Missing HUME_API_KEY environment variable and no API key provided in request');
       return NextResponse.json(
         { error: 'Missing API credentials' },
         { status: 500 }
